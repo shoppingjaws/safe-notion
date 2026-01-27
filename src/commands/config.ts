@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import { validateConfig, initConfig, getConfigPath } from "../config.ts";
+import { validateConfig, initConfig, getConfigPath, loadConfig } from "../config.ts";
 import { outputJson, handleError } from "./utils.ts";
 
 export function createConfigCommand(): Command {
@@ -51,6 +51,21 @@ export function createConfigCommand(): Command {
     .description("Show the configuration file path")
     .action(() => {
       outputJson({ path: getConfigPath() });
+    });
+
+  config
+    .command("show")
+    .description("Show the current configuration")
+    .action(() => {
+      try {
+        const configData = loadConfig();
+        outputJson({
+          path: getConfigPath(),
+          config: configData,
+        });
+      } catch (error) {
+        handleError(error);
+      }
     });
 
   return config;
