@@ -4,7 +4,7 @@ import { join, dirname } from "node:path";
 import { parse as parseJsonc } from "jsonc-parser";
 import { ConfigSchema, type Config } from "./types.ts";
 
-const CONFIG_DIR = join(homedir(), ".config", "notion-cli-for-ai");
+const CONFIG_DIR = join(homedir(), ".config", "safe-notion");
 const CONFIG_PATH = join(CONFIG_DIR, "config.jsonc");
 
 export function getConfigPath(): string {
@@ -71,7 +71,7 @@ export function initConfig(): string {
   }
 
   const template = `{
-  // Notion CLI for AI - Configuration
+  // Safe Notion - Configuration
   // Rules are evaluated in order; first matching rule applies
   "rules": [
     {

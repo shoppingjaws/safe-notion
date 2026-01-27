@@ -1,5 +1,5 @@
 {
-  "name": "notion-cli-for-ai",
+  "name": "safe-notion",
   "version": "0.1.0",
   "description": "A safe Notion API wrapper CLI for AI agents",
   "module": "src/index.ts",
