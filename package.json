@@ -1,6 +1,6 @@
 {
   "name": "safe-notion",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "A safe Notion API wrapper CLI for AI agents with granular permission control",
   "license": "MIT",
   "author": "shoppingjaws",
@@ -27,7 +27,7 @@
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
-    "notion-safe": "dist/index.js"
+    "safe-notion": "dist/index.js"
   },
   "files": [
     "dist",
