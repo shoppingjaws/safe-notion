@@ -54,6 +54,7 @@
     "@notionhq/client": "^5.8.0",
     "commander": "^14.0.2",
     "jsonc-parser": "^3.3.1",
+    "safe-notion": "^0.1.0",
     "zod": "^4.3.6"
   },
   "engines": {
