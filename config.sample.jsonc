@@ -1,0 +1,58 @@
+{
+  // Notion Safe CLI - Configuration
+  // Rules are evaluated in order; first matching rule applies
+  "rules": [
+    {
+      // Example 1: Read-only access to a specific page and all its children
+      "name": "Personal notes - read only",
+      "pageId": "12345678-1234-1234-1234-123456789abc",
+      "permissions": ["read"]
+    },
+    {
+      // Example 2: Database with conditional write access
+      // Only allows write when Assignee property matches the specified user
+      "name": "Work tasks - conditional write",
+      "databaseId": "abcdef12-3456-7890-abcd-ef1234567890",
+      "permissions": ["read", "write", "create"],
+      "writeCondition": {
+        "property": "Assignee",
+        "type": "people",
+        "equals": "user-id-from-notion"  // Replace with actual user ID
+      }
+    },
+    {
+      // Example 3: Database with status-based conditional write
+      // Only allows write when Status is "In Progress"
+      "name": "Project tracker - status conditional",
+      "databaseId": "fedcba98-7654-3210-fedc-ba9876543210",
+      "permissions": ["read", "write"],
+      "writeCondition": {
+        "property": "Status",
+        "type": "status",
+        "equals": "In Progress"
+      }
+    },
+    {
+      // Example 4: Full access to a workspace page
+      "name": "AI Workspace - full access",
+      "pageId": "workspace-page-id-here",
+      "permissions": ["read", "write", "create", "delete"]
+    },
+    {
+      // Example 5: Database with checkbox condition
+      // Only allows write when "AI Editable" checkbox is true
+      "name": "Shared DB - checkbox conditional",
+      "databaseId": "shared-db-id-here",
+      "permissions": ["read", "write"],
+      "writeCondition": {
+        "property": "AI Editable",
+        "type": "checkbox",
+        "equals": true
+      }
+    }
+  ],
+  // Default behavior when no rule matches
+  // "deny" - Block all access (recommended for safety)
+  // "read" - Allow read-only access
+  "defaultPermission": "deny"
+}
