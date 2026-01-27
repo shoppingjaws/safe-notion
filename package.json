@@ -2,6 +2,11 @@
   "name": "safe-notion",
   "version": "0.1.0",
   "description": "A safe Notion API wrapper CLI for AI agents",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/shoppingjaws/safe-notion.git"
+  },
   "module": "src/index.ts",
   "type": "module",
   "bin": {
