@@ -1,7 +1,17 @@
 import { Client } from "@notionhq/client";
+import { LogLevel } from "@notionhq/client/build/src/logging";
 import { loadConfig, getNotionToken } from "./config.ts";
 import { checkPermission, clearCache } from "./permissions.ts";
 import type { Config, ErrorResponse, OperationType } from "./types.ts";
+
+// Debug mode flag
+let debugMode = false;
+
+export function setDebugMode(enabled: boolean): void {
+  debugMode = enabled;
+  // Reset client instance to apply new log level
+  clientInstance = null;
+}
 
 // Use generic types to avoid issues with Notion SDK version changes
 type CreatePageParams = Parameters<Client["pages"]["create"]>[0];
@@ -23,7 +33,10 @@ export class NotionSafeClient {
 
   constructor() {
     const token = getNotionToken();
-    this.client = new Client({ auth: token });
+    this.client = new Client({
+      auth: token,
+      logLevel: debugMode ? LogLevel.WARN : LogLevel.ERROR,
+    });
     this.config = loadConfig();
   }
 
@@ -89,11 +102,26 @@ export class NotionSafeClient {
     params?: QueryParams
   ): Promise<unknown> {
     await this.ensurePermission(databaseId, "database:query");
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return (this.client.databases as any).query({
+
+    // Notion SDK 5.x では databases.query が dataSources.query に変更された
+    // まずデータベースから data_source_id を取得
+    const database = (await this.client.databases.retrieve({
       database_id: databaseId,
+    })) as { data_sources?: Array<{ id: string }> };
+
+    const dataSourceId = database.data_sources?.[0]?.id;
+    if (!dataSourceId) {
+      throw {
+        error: "Database has no data source",
+        code: "NO_DATA_SOURCE",
+      };
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return this.client.dataSources.query({
+      data_source_id: dataSourceId,
       ...params,
-    });
+    } as any);
   }
 
   async createDatabasePage(

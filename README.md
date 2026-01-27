@@ -28,7 +28,7 @@ export NOTION_TOKEN="your-notion-integration-token"
 設定ファイルを初期化:
 
 ```bash
-notion-safe config init
+safe-notion config init
 ```
 
 設定ファイルの場所: `~/.config/safe-notion/config.jsonc`
@@ -85,34 +85,34 @@ notion-safe config init
 ### ページ操作
 
 ```bash
-notion-safe page get <page-id>
-notion-safe page create --parent <parent-id> --title "タイトル"
-notion-safe page update <page-id>
+safe-notion page get <page-id>
+safe-notion page create --parent <parent-id> --title "タイトル"
+safe-notion page update <page-id>
 ```
 
 ### データベース操作
 
 ```bash
-notion-safe db get <database-id>
-notion-safe db query <database-id>
-notion-safe db create-page <database-id>
+safe-notion db get <database-id>
+safe-notion db query <database-id>
+safe-notion db create-page <database-id>
 ```
 
 ### ブロック操作
 
 ```bash
-notion-safe block get <block-id>
-notion-safe block children <block-id>
-notion-safe block append <block-id> --children '<json>'
-notion-safe block delete <block-id>
+safe-notion block get <block-id>
+safe-notion block children <block-id>
+safe-notion block append <block-id> --children '<json>'
+safe-notion block delete <block-id>
 ```
 
 ### 設定管理
 
 ```bash
-notion-safe config init      # 設定ファイルを初期化
-notion-safe config validate  # 設定を検証
-notion-safe config path      # 設定ファイルのパスを表示
+safe-notion config init      # 設定ファイルを初期化
+safe-notion config validate  # 設定を検証
+safe-notion config path      # 設定ファイルのパスを表示
 ```
 
 ## 開発
