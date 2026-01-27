@@ -7,8 +7,13 @@ import type {
   WriteCondition,
 } from "./types.ts";
 
-// Cache for parent hierarchy lookups
-const parentCache = new Map<string, string | null>();
+// Cache for parent hierarchy lookups with TTL
+interface CacheEntry {
+  value: string | null;
+  expiresAt: number;
+}
+const parentCache = new Map<string, CacheEntry>();
+const CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
 
 function normalizeId(id: string): string {
   return id.replace(/-/g, "").toLowerCase();
@@ -23,9 +28,11 @@ async function getParentId(
   resourceId: string
 ): Promise<string | null> {
   const normalizedId = normalizeId(resourceId);
+  const now = Date.now();
 
-  if (parentCache.has(normalizedId)) {
-    return parentCache.get(normalizedId) ?? null;
+  const cached = parentCache.get(normalizedId);
+  if (cached && cached.expiresAt > now) {
+    return cached.value;
   }
 
   try {
@@ -37,8 +44,11 @@ async function getParentId(
         parentId = page.parent.page_id;
       } else if (page.parent.type === "database_id") {
         parentId = page.parent.database_id;
+      } else if (page.parent.type === "data_source_id" && "database_id" in page.parent) {
+        // Notion SDK v5+ returns data_source_id type with database_id field
+        parentId = (page.parent as { database_id: string }).database_id;
       }
-      parentCache.set(normalizedId, parentId);
+      parentCache.set(normalizedId, { value: parentId, expiresAt: now + CACHE_TTL_MS });
       return parentId;
     }
   } catch {
@@ -54,7 +64,7 @@ async function getParentId(
         } else if (block.parent.type === "block_id") {
           parentId = block.parent.block_id;
         }
-        parentCache.set(normalizedId, parentId);
+        parentCache.set(normalizedId, { value: parentId, expiresAt: now + CACHE_TTL_MS });
         return parentId;
       }
     } catch {
@@ -66,7 +76,7 @@ async function getParentId(
           if (db.parent.type === "page_id") {
             parentId = db.parent.page_id;
           }
-          parentCache.set(normalizedId, parentId);
+          parentCache.set(normalizedId, { value: parentId, expiresAt: now + CACHE_TTL_MS });
           return parentId;
         }
       } catch {
@@ -75,7 +85,7 @@ async function getParentId(
     }
   }
 
-  parentCache.set(normalizedId, null);
+  parentCache.set(normalizedId, { value: null, expiresAt: now + CACHE_TTL_MS });
   return null;
 }
 
