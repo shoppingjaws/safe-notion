@@ -1,6 +1,6 @@
 {
   "name": "safe-notion",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A safe Notion API wrapper CLI for AI agents with granular permission control",
   "license": "MIT",
   "author": "shoppingjaws",
