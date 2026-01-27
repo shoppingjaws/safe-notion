@@ -1,50 +1,69 @@
 {
   // Notion Safe CLI - Configuration
   // Rules are evaluated in order; first matching rule applies
+  //
+  // Permission types (granular format):
+  //   page:read, page:update, page:create
+  //   database:read, database:query, database:create
+  //   block:read, block:append, block:delete
   "rules": [
     {
       // Example 1: Read-only access to a specific page and all its children
       "name": "Personal notes - read only",
       "pageId": "12345678-1234-1234-1234-123456789abc",
-      "permissions": ["read"]
+      "permissions": ["page:read", "database:read", "database:query", "block:read"]
     },
     {
-      // Example 2: Database with conditional write access
-      // Only allows write when Assignee property matches the specified user
-      "name": "Work tasks - conditional write",
+      // Example 2: Read + block append only (no page property updates, no delete)
+      // Use case: Reference documents that AI can add notes to but not modify
+      "name": "Reference docs - read and append",
+      "pageId": "11111111-1111-1111-1111-111111111111",
+      "permissions": ["page:read", "database:read", "database:query", "block:read", "block:append"]
+    },
+    {
+      // Example 3: Database with conditional access
+      // Only allows access when Assignee property matches the specified user
+      "name": "Work tasks - conditional",
       "databaseId": "abcdef12-3456-7890-abcd-ef1234567890",
-      "permissions": ["read", "write", "create"],
-      "writeCondition": {
+      "permissions": ["page:read", "database:read", "database:query", "block:read", "page:update", "block:append", "page:create", "database:create"],
+      "condition": {
         "property": "Assignee",
         "type": "people",
         "equals": "user-id-from-notion"  // Replace with actual user ID
       }
     },
     {
-      // Example 3: Database with status-based conditional write
-      // Only allows write when Status is "In Progress"
+      // Example 4: Database query and create only (no updates to existing pages)
+      // Use case: Task database where AI can create new tasks but not modify existing ones
+      "name": "Task DB - query and create only",
+      "databaseId": "22222222-2222-2222-2222-222222222222",
+      "permissions": ["database:read", "database:query", "database:create"]
+    },
+    {
+      // Example 5: Database with status-based condition
+      // Only allows access when Status is "In Progress"
       "name": "Project tracker - status conditional",
       "databaseId": "fedcba98-7654-3210-fedc-ba9876543210",
-      "permissions": ["read", "write"],
-      "writeCondition": {
+      "permissions": ["page:read", "database:read", "database:query", "block:read", "page:update", "block:append"],
+      "condition": {
         "property": "Status",
         "type": "status",
         "equals": "In Progress"
       }
     },
     {
-      // Example 4: Full access to a workspace page
+      // Example 6: Full access to a workspace page
       "name": "AI Workspace - full access",
       "pageId": "workspace-page-id-here",
-      "permissions": ["read", "write", "create", "delete"]
+      "permissions": ["page:read", "page:update", "page:create", "database:read", "database:query", "database:create", "block:read", "block:append", "block:delete"]
     },
     {
-      // Example 5: Database with checkbox condition
-      // Only allows write when "AI Editable" checkbox is true
+      // Example 7: Database with checkbox condition
+      // Only allows access when "AI Editable" checkbox is true
       "name": "Shared DB - checkbox conditional",
       "databaseId": "shared-db-id-here",
-      "permissions": ["read", "write"],
-      "writeCondition": {
+      "permissions": ["page:read", "database:read", "database:query", "block:read", "page:update", "block:append"],
+      "condition": {
         "property": "AI Editable",
         "type": "checkbox",
         "equals": true

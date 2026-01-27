@@ -51,7 +51,7 @@ export class NotionSafeClient {
 
   // Page operations
   async getPage(pageId: string): Promise<unknown> {
-    await this.ensurePermission(pageId, "read");
+    await this.ensurePermission(pageId, "page:read");
     return this.client.pages.retrieve({ page_id: pageId });
   }
 
@@ -66,7 +66,7 @@ export class NotionSafeClient {
       throw { error: "Invalid parent type", code: "INVALID_PARENT" };
     }
 
-    await this.ensurePermission(parentId, "create");
+    await this.ensurePermission(parentId, "page:create");
     return this.client.pages.create(params);
   }
 
@@ -74,13 +74,13 @@ export class NotionSafeClient {
     pageId: string,
     properties: UpdatePageParams["properties"]
   ): Promise<unknown> {
-    await this.ensurePermission(pageId, "write", pageId);
+    await this.ensurePermission(pageId, "page:update", pageId);
     return this.client.pages.update({ page_id: pageId, properties });
   }
 
   // Database operations
   async getDatabase(databaseId: string): Promise<unknown> {
-    await this.ensurePermission(databaseId, "read");
+    await this.ensurePermission(databaseId, "database:read");
     return this.client.databases.retrieve({ database_id: databaseId });
   }
 
@@ -88,7 +88,7 @@ export class NotionSafeClient {
     databaseId: string,
     params?: QueryParams
   ): Promise<unknown> {
-    await this.ensurePermission(databaseId, "read");
+    await this.ensurePermission(databaseId, "database:query");
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return (this.client.databases as any).query({
       database_id: databaseId,
@@ -100,7 +100,7 @@ export class NotionSafeClient {
     databaseId: string,
     properties: CreatePageParams["properties"]
   ): Promise<unknown> {
-    await this.ensurePermission(databaseId, "create");
+    await this.ensurePermission(databaseId, "database:create");
     return this.client.pages.create({
       parent: { database_id: databaseId },
       properties,
@@ -109,7 +109,7 @@ export class NotionSafeClient {
 
   // Block operations
   async getBlock(blockId: string): Promise<unknown> {
-    await this.ensurePermission(blockId, "read");
+    await this.ensurePermission(blockId, "block:read");
     return this.client.blocks.retrieve({ block_id: blockId });
   }
 
@@ -118,7 +118,7 @@ export class NotionSafeClient {
     startCursor?: string,
     pageSize?: number
   ): Promise<unknown> {
-    await this.ensurePermission(blockId, "read");
+    await this.ensurePermission(blockId, "block:read");
     return this.client.blocks.children.list({
       block_id: blockId,
       start_cursor: startCursor,
@@ -130,7 +130,7 @@ export class NotionSafeClient {
     blockId: string,
     children: AppendBlockChildrenParams["children"]
   ): Promise<unknown> {
-    await this.ensurePermission(blockId, "write");
+    await this.ensurePermission(blockId, "block:append");
     return this.client.blocks.children.append({
       block_id: blockId,
       children,
@@ -138,7 +138,7 @@ export class NotionSafeClient {
   }
 
   async deleteBlock(blockId: string): Promise<unknown> {
-    await this.ensurePermission(blockId, "delete");
+    await this.ensurePermission(blockId, "block:delete");
     return this.client.blocks.delete({ block_id: blockId });
   }
 

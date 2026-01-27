@@ -4,7 +4,8 @@ import type {
   Rule,
   OperationType,
   PermissionCheckResult,
-  WriteCondition,
+  Condition,
+  Permission,
 } from "./types.ts";
 
 // Cache for parent hierarchy lookups with TTL
@@ -117,10 +118,10 @@ async function isDescendantOf(
   return false;
 }
 
-async function checkWriteCondition(
+async function checkCondition(
   client: Client,
   pageId: string,
-  condition: WriteCondition
+  condition: Condition
 ): Promise<boolean> {
   try {
     const page = await client.pages.retrieve({ page_id: pageId });
@@ -190,17 +191,9 @@ export async function checkPermission(
     }
 
     if (matches) {
-      // Check if operation is allowed
-      const permissionMap: Record<OperationType, string> = {
-        read: "read",
-        write: "write",
-        create: "create",
-        delete: "delete",
-      };
-
-      const hasPermission = rule.permissions.includes(
-        permissionMap[operation] as Rule["permissions"][number]
-      );
+      // Check if rule has the required permission
+      const rulePermissions = new Set<Permission>(rule.permissions);
+      const hasPermission = rulePermissions.has(operation);
 
       if (!hasPermission) {
         return {
@@ -210,23 +203,26 @@ export async function checkPermission(
         };
       }
 
-      // Check write condition for write operations
-      if (
-        (operation === "write" || operation === "create") &&
-        rule.writeCondition
-      ) {
+      // Check condition for write-like operations (update, append, create)
+      const writeOperations: OperationType[] = [
+        "page:update",
+        "block:append",
+        "page:create",
+        "database:create",
+      ];
+      if (writeOperations.includes(operation) && rule.condition) {
         const targetPageId = pageIdForCondition ?? resourceId;
-        const conditionMet = await checkWriteCondition(
+        const conditionMet = await checkCondition(
           client,
           targetPageId,
-          rule.writeCondition
+          rule.condition
         );
 
         if (!conditionMet) {
           return {
             allowed: false,
             rule,
-            reason: `Write condition not met: ${rule.writeCondition.property} must equal '${rule.writeCondition.equals}'`,
+            reason: `Condition not met: ${rule.condition.property} must equal '${rule.condition.equals}'`,
           };
         }
       }
@@ -240,7 +236,14 @@ export async function checkPermission(
   }
 
   // No matching rule, use default permission
-  if (config.defaultPermission === "read" && operation === "read") {
+  // Check if operation is a read-type operation
+  const readOperations: OperationType[] = [
+    "page:read",
+    "database:read",
+    "database:query",
+    "block:read",
+  ];
+  if (config.defaultPermission === "read" && readOperations.includes(operation)) {
     return {
       allowed: true,
       reason: "Allowed by default read permission",

@@ -73,31 +73,47 @@ export function initConfig(): string {
   const template = `{
   // Safe Notion - Configuration
   // Rules are evaluated in order; first matching rule applies
+  //
+  // Permission types (granular format):
+  //   page:read, page:update, page:create
+  //   database:read, database:query, database:create
+  //   block:read, block:append, block:delete
   "rules": [
     {
       // Rule name (for logging)
       "name": "Example - Read only page",
       // Page ID (applies to this page and all children)
       "pageId": "00000000-0000-0000-0000-000000000000",
-      // Allowed operations: read, write, create, delete
-      "permissions": ["read"]
+      "permissions": ["page:read", "database:read", "database:query", "block:read"]
+    },
+    {
+      "name": "Example - Read + block append only",
+      // Allows reading and adding blocks, but NOT updating page properties or deleting
+      "pageId": "11111111-1111-1111-1111-111111111111",
+      "permissions": ["page:read", "database:read", "database:query", "block:read", "block:append"]
     },
     {
       "name": "Example - Database with conditional write",
       // Database ID
-      "databaseId": "11111111-1111-1111-1111-111111111111",
-      "permissions": ["read", "write"],
-      // Optional: Only allow write if this condition is met
-      "writeCondition": {
+      "databaseId": "22222222-2222-2222-2222-222222222222",
+      "permissions": ["page:read", "database:read", "database:query", "block:read", "page:update", "block:append"],
+      // Optional: Only allow if this condition is met
+      "condition": {
         "property": "Assignee",  // Property name
         "type": "people",        // Property type: people, select, multi_select, status, checkbox
         "equals": "user-id"      // Value to match (user ID for people, string for others)
       }
     },
     {
+      "name": "Example - Database query and create only",
+      // Allows querying and creating pages in DB, but NOT updating existing pages
+      "databaseId": "33333333-3333-3333-3333-333333333333",
+      "permissions": ["database:read", "database:query", "database:create"]
+    },
+    {
       "name": "Example - Full access page",
-      "pageId": "22222222-2222-2222-2222-222222222222",
-      "permissions": ["read", "write", "create", "delete"]
+      "pageId": "44444444-4444-4444-4444-444444444444",
+      "permissions": ["page:read", "page:update", "page:create", "database:read", "database:query", "database:create", "block:read", "block:append", "block:delete"]
     }
   ],
   // Default behavior when no rule matches: "deny" or "read"
