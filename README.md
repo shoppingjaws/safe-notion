@@ -1,15 +1,140 @@
-# notion-cli-for-ai
+# safe-notion
 
-To install dependencies:
+AIエージェント向けの安全なNotion APIラッパーCLI。きめ細かな権限制御により、AIエージェントとNotion API間のセキュリティレイヤーとして機能します。
+
+## 特徴
+
+- **きめ細かな権限制御**: `resource:operation` 形式（例: `page:read`, `database:query`）で操作を制限
+- **階層認識**: 子ページは親ページのルールを継承
+- **条件付きアクセス**: Notionプロパティの値に基づいたアクセス制御
+- **デフォルト拒否**: 明示的に許可されない限り、すべての操作を拒否
+
+## インストール
+
+```bash
+npm install -g safe-notion
+```
+
+## 設定
+
+### 環境変数
+
+```bash
+export NOTION_TOKEN="your-notion-integration-token"
+```
+
+### 設定ファイル
+
+設定ファイルを初期化:
+
+```bash
+notion-safe config init
+```
+
+設定ファイルの場所: `~/.config/safe-notion/config.jsonc`
+
+### 設定例
+
+```jsonc
+{
+  "rules": [
+    {
+      // 特定ページとその子孫に読み取り専用アクセス
+      "name": "docs-readonly",
+      "pageId": "12345678-1234-1234-1234-123456789abc",
+      "permissions": ["page:read", "block:read"]
+    },
+    {
+      // データベースへのクエリと新規作成のみ許可
+      "name": "tasks-db",
+      "databaseId": "87654321-4321-4321-4321-cba987654321",
+      "permissions": ["database:read", "database:query", "database:create"]
+    },
+    {
+      // 条件付きアクセス: 担当者が自分の場合のみ更新可能
+      "name": "my-tasks-only",
+      "databaseId": "87654321-4321-4321-4321-cba987654321",
+      "permissions": ["page:update"],
+      "condition": {
+        "property": "担当者",
+        "type": "people",
+        "equals": "me"
+      }
+    }
+  ],
+  "defaultPermission": "deny"
+}
+```
+
+## 使用可能な権限
+
+| リソース | 権限 | 説明 |
+|---------|------|------|
+| Page | `page:read` | ページの読み取り |
+| Page | `page:update` | ページの更新 |
+| Page | `page:create` | ページの作成 |
+| Database | `database:read` | データベースの読み取り |
+| Database | `database:query` | データベースのクエリ |
+| Database | `database:create` | データベースへのページ作成 |
+| Block | `block:read` | ブロックの読み取り |
+| Block | `block:append` | ブロックの追加 |
+| Block | `block:delete` | ブロックの削除 |
+
+## CLIコマンド
+
+### ページ操作
+
+```bash
+notion-safe page get <page-id>
+notion-safe page create --parent <parent-id> --title "タイトル"
+notion-safe page update <page-id>
+```
+
+### データベース操作
+
+```bash
+notion-safe db get <database-id>
+notion-safe db query <database-id>
+notion-safe db create-page <database-id>
+```
+
+### ブロック操作
+
+```bash
+notion-safe block get <block-id>
+notion-safe block children <block-id>
+notion-safe block append <block-id> --children '<json>'
+notion-safe block delete <block-id>
+```
+
+### 設定管理
+
+```bash
+notion-safe config init      # 設定ファイルを初期化
+notion-safe config validate  # 設定を検証
+notion-safe config path      # 設定ファイルのパスを表示
+```
+
+## 開発
+
+### 依存関係のインストール
 
 ```bash
 bun install
 ```
 
-To run:
+### ビルド
 
 ```bash
-bun run src/index.ts
+bun run build
 ```
 
-This project was created using `bun init` in bun v1.3.3. [Bun](https://bun.com) is a fast all-in-one JavaScript runtime.
+### 型チェック
+
+```bash
+bun run typecheck
+```
+
+## ライセンス
+
+MIT

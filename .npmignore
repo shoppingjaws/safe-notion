@@ -1,0 +1,22 @@
+# Source files
+src/
+
+# Config files
+tsconfig.json
+tsconfig.build.json
+.gitignore
+.github/
+
+# Development
+*.log
+.env*
+.vscode/
+.idea/
+
+# Test files
+*.test.ts
+*.spec.ts
+__tests__/
+
+# Other
+bun.lock
