@@ -5,6 +5,7 @@ import { createPageCommand } from "./commands/page.ts";
 import { createDbCommand } from "./commands/db.ts";
 import { createBlockCommand } from "./commands/block.ts";
 import { createConfigCommand } from "./commands/config.ts";
+import { createSearchCommand } from "./commands/search.ts";
 import { setDebugMode } from "./notion-client.ts";
 
 const program = new Command();
@@ -25,5 +26,6 @@ program.addCommand(createPageCommand());
 program.addCommand(createDbCommand());
 program.addCommand(createBlockCommand());
 program.addCommand(createConfigCommand());
+program.addCommand(createSearchCommand());
 
 program.parse();

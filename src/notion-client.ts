@@ -170,6 +170,37 @@ export class NotionSafeClient {
     return this.client.blocks.delete({ block_id: blockId });
   }
 
+  // Search operations
+  async search(params: {
+    query?: string;
+    filter?: { property: "object"; value: "page" | "data_source" };
+    sort?: {
+      direction: "ascending" | "descending";
+      timestamp: "last_edited_time";
+    };
+    start_cursor?: string;
+    page_size?: number;
+  }): Promise<unknown> {
+    // Search permission check: allowed if defaultPermission is "read" or any rule has read permissions
+    const hasReadPermission =
+      this.config.defaultPermission === "read" ||
+      this.config.rules.some((rule) =>
+        rule.permissions.some((p) =>
+          ["page:read", "database:read", "block:read"].includes(p)
+        )
+      );
+
+    if (!hasReadPermission) {
+      const error: ErrorResponse = {
+        error: "Search not allowed: no read permissions configured",
+        code: "PERMISSION_DENIED",
+      };
+      throw error;
+    }
+
+    return this.client.search(params);
+  }
+
   // Clear the parent hierarchy cache
   clearCache(): void {
     clearCache();
