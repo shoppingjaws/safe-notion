@@ -6,6 +6,8 @@ import { createDbCommand } from "./commands/db.ts";
 import { createBlockCommand } from "./commands/block.ts";
 import { createConfigCommand } from "./commands/config.ts";
 import { createSearchCommand } from "./commands/search.ts";
+import { createAuthCommand } from "./commands/auth.ts";
+import { createActivateCommand } from "./commands/activate.ts";
 import { setDebugMode } from "./notion-client.ts";
 
 const program = new Command();
@@ -27,5 +29,7 @@ program.addCommand(createDbCommand());
 program.addCommand(createBlockCommand());
 program.addCommand(createConfigCommand());
 program.addCommand(createSearchCommand());
+program.addCommand(createAuthCommand());
+program.addCommand(createActivateCommand());
 
 program.parse();

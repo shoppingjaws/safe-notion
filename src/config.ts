@@ -3,9 +3,16 @@ import { homedir } from "node:os";
 import { join, dirname } from "node:path";
 import { parse as parseJsonc } from "jsonc-parser";
 import { ConfigSchema, type Config } from "./types.ts";
+import { loadCredentials } from "./credentials.ts";
 
 const CONFIG_DIR = join(homedir(), ".config", "safe-notion");
 const CONFIG_PATH = join(CONFIG_DIR, "config.jsonc");
+const OAUTH_CONFIG_PATH = join(CONFIG_DIR, "oauth.json");
+
+export interface OAuthConfig {
+  clientId: string;
+  clientSecret: string;
+}
 
 export function getConfigPath(): string {
   return CONFIG_PATH;
@@ -127,13 +134,56 @@ export function initConfig(): string {
   return CONFIG_PATH;
 }
 
-export function getNotionToken(): string {
-  const token = process.env.NOTION_TOKEN;
-  if (!token) {
-    throw new Error(
-      "NOTION_TOKEN environment variable is not set.\n" +
-        "Get your API token from https://www.notion.so/my-integrations"
-    );
+export function getOAuthConfig(): OAuthConfig {
+  // 1. 環境変数から取得
+  const envClientId = process.env.NOTION_CLIENT_ID;
+  const envClientSecret = process.env.NOTION_CLIENT_SECRET;
+
+  if (envClientId && envClientSecret) {
+    return {
+      clientId: envClientId,
+      clientSecret: envClientSecret,
+    };
   }
-  return token;
+
+  // 2. 設定ファイルから取得
+  if (existsSync(OAUTH_CONFIG_PATH)) {
+    try {
+      const content = readFileSync(OAUTH_CONFIG_PATH, "utf-8");
+      const parsed = JSON.parse(content);
+      if (parsed.clientId && parsed.clientSecret) {
+        return {
+          clientId: parsed.clientId,
+          clientSecret: parsed.clientSecret,
+        };
+      }
+    } catch {
+      // ファイル読み込み失敗時は続行
+    }
+  }
+
+  throw new Error(
+    "OAuth configuration not found.\n" +
+      "Set NOTION_CLIENT_ID and NOTION_CLIENT_SECRET environment variables,\n" +
+      `or create ${OAUTH_CONFIG_PATH} with clientId and clientSecret.`
+  );
+}
+
+export function getNotionToken(): string {
+  // 1. 環境変数 NOTION_TOKEN（優先）
+  const envToken = process.env.NOTION_TOKEN;
+  if (envToken) {
+    return envToken;
+  }
+
+  // 2. credentials.json の access_token
+  const credentials = loadCredentials();
+  if (credentials?.access_token) {
+    return credentials.access_token;
+  }
+
+  throw new Error(
+    "NOTION_TOKEN environment variable is not set and no OAuth credentials found.\n" +
+      "Either set NOTION_TOKEN, or run 'safe-notion auth' to authenticate via OAuth."
+  );
 }
